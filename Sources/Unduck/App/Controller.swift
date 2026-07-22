@@ -201,6 +201,53 @@ final class Controller: ObservableObject {
         status = "Approve the permission dialogs, then try a call"
     }
 
+    // MARK: - First-run setup
+
+    /// Accessibility, re-read on demand.
+    ///
+    /// Not a stored property: the user grants it in System Settings, outside this
+    /// process, so any cached value is stale the moment it matters. `AXIsProcessTrusted`
+    /// is cheap and always current.
+    @Published private(set) var accessibilityGranted = AXIsProcessTrusted()
+
+    /// Accessibility is optional, but "optional" must not mean "invisible".
+    ///
+    /// Without it auto-resume silently does nothing — no error, no dialog, media just
+    /// never comes back — which is the same class of failure as a denied audio tap
+    /// returning zeros. So the checklist keeps showing that step until the user either
+    /// grants it or explicitly skips it, and the skip is remembered.
+    @Published var accessibilitySkipped = UserDefaults.standard.bool(forKey: "accessibilitySkipped") {
+        didSet { UserDefaults.standard.set(accessibilitySkipped, forKey: "accessibilitySkipped") }
+    }
+
+    var setupComplete: Bool {
+        permission.isUsable && isInstalled && (accessibilityGranted || accessibilitySkipped)
+    }
+
+    func refreshSetupState() {
+        accessibilityGranted = AXIsProcessTrusted()
+        permission = AudioCapturePermission.state
+    }
+
+    func requestAudioCapture() {
+        AudioCapturePermission.request { [weak self] state in
+            self?.permission = state
+            Log.write("setup: audio capture -> \(state)")
+        }
+    }
+
+    /// Opens the Accessibility pane directly. `AXIsProcessTrustedWithOptions` shows a
+    /// prompt with an "Open System Settings" button, but only the first time per app;
+    /// after that it silently does nothing, which looks like a broken button. Opening
+    /// the URL works every time.
+    func openAccessibilitySettings() {
+        resumer.requestAllPermissions()
+        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
+            NSWorkspace.shared.open(url)
+        }
+        status = "Add Unduck in the list, turn it on, then reopen Unduck"
+    }
+
     private func pushLevels() {
         engine.levels = .init(call: callLevel, media: mediaLevel, master: masterLevel)
     }

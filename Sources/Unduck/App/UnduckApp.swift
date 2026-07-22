@@ -58,6 +58,8 @@ struct MixerView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
+            SetupView(controller: controller)
+
             HStack {
                 Circle()
                     .fill(controller.isEngaged ? Color.green : (controller.isOnCall ? .orange : .secondary))
@@ -136,6 +138,13 @@ struct MixerView: View {
         }
         .padding(14)
         .frame(width: 300)
+        // Permissions are granted in System Settings, in another process. Re-read them
+        // whenever the user comes back to Unduck, or the checklist keeps showing steps
+        // they have already done.
+        .onReceive(NotificationCenter.default.publisher(
+            for: NSApplication.didBecomeActiveNotification)) { _ in
+            controller.refreshSetupState()
+        }
     }
 
     private func fader(_ title: String, value: Binding<Float>) -> some View {
