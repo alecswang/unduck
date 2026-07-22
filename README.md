@@ -25,11 +25,23 @@ The checklist asks for two things:
 
 Then turn on **Start Unduck at login** and forget about it.
 
-> **First launch may say "Apple could not verify Unduck is free of malware."**
-> That means this build was not notarized by Apple, which costs a paid developer
-> membership. To open it anyway: **System Settings → Privacy & Security**, scroll
-> down, press **Open Anyway**. If you would rather not, build it yourself — see
-> below — which sidesteps the warning entirely.
+> **macOS will say "Apple could not verify Unduck-0.1.dmg is free of malware."**
+>
+> The download is signed, but not notarized by Apple, which requires a paid
+> developer membership. macOS blocks the disk image, and then blocks the app again
+> after you drag it out, because the quarantine flag is copied along with it.
+>
+> Clearing the flag on the download handles both at once:
+>
+> ```bash
+> xattr -d com.apple.quarantine ~/Downloads/Unduck-0.1.dmg
+> ```
+>
+> Without the terminal: open the DMG, press Open Anyway in **System Settings,
+> Privacy and Security**, drag the app across, open it, and press Open Anyway a
+> second time for the app itself.
+>
+> Building it yourself avoids all of this. See below.
 
 ## Using it
 
