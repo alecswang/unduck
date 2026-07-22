@@ -16,7 +16,11 @@ cd "$(dirname "$0")"
 NAME="Unduck Self Signed"
 KEYCHAIN="$HOME/Library/Keychains/login.keychain-db"
 
-if security find-identity -v -p codesigning | grep -q "$NAME"; then
+# Check with find-certificate, NOT `find-identity -p codesigning`. A self-signed
+# cert that has not been marked as a trusted root is absent from find-identity yet
+# `codesign --sign "$NAME"` uses it happily. Checking the wrong one means this
+# script never sees its own work and imports a duplicate cert on every run.
+if security find-certificate -c "$NAME" >/dev/null 2>&1; then
   echo "identity already exists: $NAME"
   exit 0
 fi
@@ -43,11 +47,18 @@ openssl pkcs12 -export -out "$TMP/identity.p12" \
 security import "$TMP/identity.p12" -k "$KEYCHAIN" -P unduck -A
 
 echo "created identity: $NAME"
-security find-identity -v -p codesigning | grep "$NAME" || {
+
+# Verify by actually signing something. Any check based on find-identity reports
+# failure here even when signing works, which is worse than no check at all.
+PROBE=$(mktemp -d)
+trap 'rm -rf "$TMP" "$PROBE"' EXIT
+cp /bin/echo "$PROBE/probe"
+if codesign --force --sign "$NAME" "$PROBE/probe" 2>/dev/null; then
+  echo "verified: the identity can sign"
+else
   echo
-  echo "The certificate imported but is not yet valid for code signing."
-  echo "It needs to be trusted. Run:"
-  echo "  security add-trusted-cert -d -r trustRoot -p codeSign -k \"$KEYCHAIN\" <cert>"
-  echo "or set it to 'Always Trust' for Code Signing in Keychain Access."
+  echo "The certificate imported but cannot sign."
+  echo "Open Keychain Access, find \"$NAME\" in the login keychain, and set"
+  echo "Trust > Code Signing to 'Always Trust'."
   exit 1
-}
+fi
