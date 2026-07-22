@@ -4,44 +4,58 @@
 
 Start a FaceTime call and everything else drops to a whisper. That is macOS turning
 every other app down by 30 dB, and there is no setting to stop it. Unduck notices the
-call, takes over the audio, and puts the 30 dB back — then gives you a **Music**
+call, takes over the audio, and puts the 30 dB back, then gives you a **Music**
 fader and a **Call voice** fader so you can set the balance yourself.
 
 macOS 14.4 or later. No driver, no kernel extension.
 
 ## Install
 
-1. Download **Unduck.dmg** from [Releases](https://github.com/alecswang/unduck/releases).
-2. Open it and drag Unduck to Applications.
-3. Open Unduck. It shows a short setup checklist — follow it and you are done.
+**Read this first.** If you download the DMG and double-click it, macOS blocks it and
+says "Apple could not verify Unduck-0.1.dmg is free of malware." That is expected.
+Unduck is signed, but not notarized by Apple, and notarization requires a paid
+developer membership. macOS blocks anything without it.
 
-The checklist asks for two things:
+The block happens twice, once on the disk image and again on the app, because the
+quarantine flag is copied along when you drag the app out. One command clears both:
 
-- **Audio capture** — so Unduck can hear other apps in order to rebalance them. Press
-  Allow when macOS asks.
-- **Accessibility** — only used to un-pause the music your call interrupted. Optional;
-  skip it and everything else still works. macOS will not let an app request this
-  one, so Unduck opens the right settings pane for you.
+```bash
+xattr -d com.apple.quarantine ~/Downloads/Unduck-0.1.dmg
+```
+
+Then:
+
+1. Download `Unduck-0.1.dmg` from [Releases](https://github.com/alecswang/unduck/releases).
+2. Run the command above.
+3. Open the DMG and drag Unduck to Applications.
+4. Open Unduck and follow the setup checklist in the window.
+
+The checklist asks for two things. **Audio capture**, so Unduck can hear other apps
+in order to rebalance them. Press Allow when macOS asks. And **Accessibility**, used
+only to un-pause the music your call interrupted. That one is optional, and skipping
+it costs nothing else. macOS does not let an app request Accessibility, so Unduck
+opens the right settings pane for you.
 
 Then turn on **Start Unduck at login** and forget about it.
 
-> **macOS will say "Apple could not verify Unduck-0.1.dmg is free of malware."**
->
-> The download is signed, but not notarized by Apple, which requires a paid
-> developer membership. macOS blocks the disk image, and then blocks the app again
-> after you drag it out, because the quarantine flag is copied along with it.
->
-> Clearing the flag on the download handles both at once:
->
-> ```bash
-> xattr -d com.apple.quarantine ~/Downloads/Unduck-0.1.dmg
-> ```
->
-> Without the terminal: open the DMG, press Open Anyway in **System Settings,
-> Privacy and Security**, drag the app across, open it, and press Open Anyway a
-> second time for the app itself.
->
-> Building it yourself avoids all of this. See below.
+<details>
+<summary>If you would rather not run a terminal command</summary>
+
+You can click through it instead, but macOS asks twice.
+
+1. Double-click the DMG. It gets blocked.
+2. Open **System Settings, Privacy and Security**, scroll to the Security section,
+   and press **Open Anyway** next to the message about the DMG.
+3. Double-click the DMG again. It mounts.
+4. Drag Unduck to Applications.
+5. Open Unduck. It gets blocked, this time as the app.
+6. Return to Privacy and Security and press **Open Anyway** again.
+
+After that it launches normally and never asks again.
+</details>
+
+Building from source avoids all of this, because the app is then signed on your own
+machine. See [Build it yourself](#build-it-yourself).
 
 ## Using it
 
@@ -54,7 +68,7 @@ up. You only need the window if you want to change the balance.
 | **Duck compensation** | How much of the 30 dB to restore. 30 is right for built-in speakers; raise or lower it if your headphones or interface sound off. |
 | **Restore everything** | Panic button. Puts your volume back immediately. |
 
-Your volume is always restored on hang-up, on quit, and even after a crash — Unduck
+Your volume is always restored on hang-up, on quit, and even after a crash. Unduck
 saves it to disk before touching it.
 
 ## Known limitations
@@ -76,7 +90,7 @@ cd unduck
 ./install.sh      # build, install to /Applications, launch
 ```
 
-Needs a Swift 6 toolchain — Xcode 16, or `xcode-select --install`.
+Needs a Swift 6 toolchain: Xcode 16, or `xcode-select --install`.
 
 Building locally avoids the Gatekeeper warning, because the app is signed by a
 certificate created on your own machine.
@@ -93,12 +107,12 @@ Log: `~/Library/Application Support/Unduck/unduck.log`
 
 ## Docs
 
-- [Architecture](docs/architecture.md) — how it works, and the non-obvious macOS
+- [Architecture](docs/architecture.md), how it works, and the non-obvious macOS
   behaviour behind each design choice
-- [Measurements](docs/measurements.md) — every constant in this code, how it was
+- [Measurements](docs/measurements.md), every constant in this code, how it was
   measured, and the theories that turned out wrong
-- [Releasing](docs/releasing.md) — signing, notarization, and what cannot be automated
-- [`tools/`](tools/README.md) — the probe that produced those numbers
+- [Releasing](docs/releasing.md), signing, notarization, and what cannot be automated
+- [`tools/`](tools/README.md), the probe that produced those numbers
 
 ## License
 
