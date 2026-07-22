@@ -1,0 +1,10 @@
+.build/
+build/
+.DS_Store
+*.xcuserstate
+tools/.build/
+tools/build/
+
+# Measurement run logs are raw output from a specific machine on a specific night.
+# The conclusions drawn from them live in docs/measurements.md, which is tracked.
+docs/*-run.log

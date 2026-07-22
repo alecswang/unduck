@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleIdentifier</key>
+	<string>com.unduck.app</string>
+	<key>CFBundleName</key>
+	<string>Unduck</string>
+	<key>CFBundleExecutable</key>
+	<string>Unduck</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>0.1</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>14.4</string>
+	<!-- Not an LSUIElement: a menu-bar-only app is unfindable when the menu bar is
+	     full, and on a notched MacBook overflow items are hidden with no indicator.
+	     Unduck shows in the Dock and opens a real window; the menu bar item stays
+	     as a shortcut for people who can see it. -->
+	<key>LSUIElement</key>
+	<false/>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>Unduck asks Spotify and Music to resume playing after a call interrupts them.</string>
+	<key>NSAudioCaptureUsageDescription</key>
+	<string>Unduck captures other apps' audio so it can rebalance music against call voice during a FaceTime call.</string>
+</dict>
+</plist>
