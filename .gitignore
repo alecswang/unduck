@@ -8,3 +8,6 @@ tools/build/
 # Measurement run logs are raw output from a specific machine on a specific night.
 # The conclusions drawn from them live in docs/measurements.md, which is tracked.
 docs/*-run.log
+
+# Intermediate from make-icon.py. The committed artefact is assets/Unduck.icns.
+assets/icon-1024.png

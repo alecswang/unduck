@@ -8,6 +8,8 @@
 	<string>Unduck</string>
 	<key>CFBundleExecutable</key>
 	<string>Unduck</string>
+	<key>CFBundleIconFile</key>
+	<string>Unduck</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

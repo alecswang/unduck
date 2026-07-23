@@ -16,7 +16,6 @@ cd "$(dirname "$0")"
 VERSION="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' Info.plist)"
 APP="build/Unduck.app"
 DMG="build/Unduck-$VERSION.dmg"
-STAGE="build/dmg"
 
 # --- pick a signing identity -------------------------------------------------
 # `find-identity -p codesigning` only lists certs chaining to a trusted root, so a
@@ -49,6 +48,10 @@ rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS"
 cp "$BIN" "$APP/Contents/MacOS/Unduck"
 cp Info.plist "$APP/Contents/Info.plist"
+# The icon lives in Resources and is named by CFBundleIconFile. Without it the
+# app shows the blank generic tile in the Dock and in Finder.
+mkdir -p "$APP/Contents/Resources"
+cp assets/Unduck.icns "$APP/Contents/Resources/Unduck.icns"
 
 # --hardened-runtime is required for notarization and harmless without it.
 # --timestamp needs the network and is only meaningful for a real identity.
@@ -79,13 +82,15 @@ elif [ "$TIER" = "developer-id" ]; then
 fi
 
 # --- package -----------------------------------------------------------------
-rm -rf "$STAGE" "$DMG"
-mkdir -p "$STAGE"
-cp -R "$APP" "$STAGE/Unduck.app"
-ln -s /Applications "$STAGE/Applications"
-
-hdiutil create -volname "Unduck" -srcfolder "$STAGE" -ov -format UDZO "$DMG" >/dev/null
-rm -rf "$STAGE"
+# dmgbuild lays the window out (background art, icon positions, no chrome) by writing
+# the .DS_Store directly. The traditional approach scripts Finder over AppleEvents,
+# which needs Automation permission, prompts the first time, and cannot run headless.
+rm -f "$DMG"
+if ! python3 -c "import dmgbuild" 2>/dev/null; then
+  echo "error: dmgbuild missing. Install it with:  pip3 install --user dmgbuild"
+  exit 1
+fi
+UNDUCK_APP="$APP" python3 -m dmgbuild -s dmg-settings.py "Unduck" "$DMG"
 
 # The DMG itself is signed too, so Gatekeeper checks it before anything is copied.
 [ "$IDENTITY" = "-" ] || codesign --force --sign "$IDENTITY" "$DMG"

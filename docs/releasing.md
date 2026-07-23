@@ -1,8 +1,33 @@
 # Releasing
 
 ```bash
-./make-dmg.sh          # -> build/Unduck-<version>.dmg
+pip3 install --user dmgbuild Pillow    # one-time
+./make-dmg.sh                          # -> build/Unduck-<version>.dmg
 ```
+
+`dmgbuild` writes the disk image window layout, and Pillow builds the icon and the
+background art. Neither is needed to build or run the app, only to package it.
+
+## Artwork
+
+`assets/icon-source.png` is the master. After replacing it:
+
+```bash
+python3 make-icon.py            # -> assets/Unduck.icns, used by the app and the DMG
+python3 make-dmg-background.py  # -> assets/dmg-background.png
+```
+
+Both generated files are committed, so a plain `./build.sh` needs neither Pillow nor
+the source art.
+
+The DMG window is laid out by `dmg-settings.py`. The icon positions there and the
+arrow drawn in `make-dmg-background.py` refer to the same 640x400 point grid, so
+changing one without the other leaves an arrow pointing at nothing.
+
+The usual way to lay out a disk image is to script Finder over AppleEvents. Unduck
+does not, because that needs Automation permission, prompts the first time, and
+fails outright when there is no user session. `dmgbuild` writes the `.DS_Store`
+directly, so the result is identical every time and works headless.
 
 The script picks the best signing identity on the machine and tells you which tier
 it used. The tier is the whole story, because it decides what a stranger sees when

@@ -23,6 +23,10 @@ rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS"
 cp "$BIN" "$APP/Contents/MacOS/Unduck"
 cp Info.plist "$APP/Contents/Info.plist"
+# The icon lives in Resources and is named by CFBundleIconFile. Without it the
+# app shows the blank generic tile in the Dock and in Finder.
+mkdir -p "$APP/Contents/Resources"
+cp assets/Unduck.icns "$APP/Contents/Resources/Unduck.icns"
 
 IDENTITY="Unduck Self Signed"
 if security find-certificate -c "$IDENTITY" >/dev/null 2>&1; then
